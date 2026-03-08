@@ -1,0 +1,582 @@
+/* =====================================================
+   DTP · Digital Thermal Printer — style.css
+   Mobile-first, 375px fixed viewport
+   ===================================================== */
+
+
+/* === RESET === */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html {
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+
+/* === LAYOUT === */
+
+:root {
+  /* Brand colours */
+  --clr-bg:          #EDE0C4; /* warm cream / parchment */
+  --clr-orange:      #F07020;
+  --clr-orange-dim:  #A04A10;
+  --clr-orange-glow: rgba(240, 112, 32, 0.55);
+  --clr-screen-bg:   #0a0a0a;
+  --clr-screen-text: #F07020;
+  --clr-screen-dim:  #7a3810;
+  --clr-white:       #ffffff;
+  --clr-selected-bg: rgba(240, 112, 32, 0.18);
+
+  /* Screen font */
+  --font-screen: 'Share Tech Mono', 'Courier New', monospace;
+
+  /* Device layout — scales from ~360px (mobile) up to 600px (desktop) */
+  --device-width:   clamp(360px, 45vw, 600px);
+  --device-radius:  28px;
+
+  /* Screen overlay — positioned over the black screen rectangle
+     in base@300x.png (2534 × 2757 native).
+     CALIBRATION NOTE: these % values map to the device-container
+     dimensions (which match the base image aspect ratio 2534:2757).
+     Adjust here or in DevTools if the overlay drifts from the screen. */
+  --screen-left:    55%;
+  --screen-top:     41%;
+  --screen-width:   40%;
+  --screen-height:  41%;
+  --screen-radius:  10px;
+
+  /* Button hit-zone size (same for all five) */
+  --btn-size:       80px;
+
+  /* Button positions — center of each recess as % of device-container.
+     CALIBRATION NOTE: measured from base@300x.png (2534 × 2757).
+     If buttons appear offset, tweak these values. The % for `top`
+     is of the container HEIGHT, `left` is of WIDTH.
+
+     color   → top-center  recess  (~32.5% w, ~20% h)
+     print   → top-right   recess  (~81%   w, ~20% h)
+     effects → middle-left recess  (~13%   w, ~39% h)
+     size    → middle-ctr  recess  (~32.5% w, ~50% h)
+     add     → bottom-left recess  (~13%   w, ~66% h)
+  */
+  --btn-half:       40px; /* half of --btn-size for calc() offsets */
+
+  --btn-color-top:  calc(20% - var(--btn-half));
+  --btn-color-left: calc(32.5% - var(--btn-half));
+
+  --btn-print-top:  calc(20% - var(--btn-half));
+  --btn-print-left: calc(81% - var(--btn-half));
+
+  --btn-effects-top:  calc(39% - var(--btn-half));
+  --btn-effects-left: calc(13% - var(--btn-half));
+
+  --btn-size-top:  calc(50% - var(--btn-half));
+  --btn-size-left: calc(32.5% - var(--btn-half));
+
+  --btn-add-top:  calc(66% - var(--btn-half));
+  --btn-add-left: calc(13% - var(--btn-half));
+
+  /* Transition timings */
+  --t-fast:   80ms;
+  --t-normal: 220ms;
+  --t-slow:   400ms;
+}
+
+body {
+  background-color: var(--clr-bg);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: var(--font-screen);
+}
+
+.page-wrapper {
+  width: var(--device-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0 40px;
+}
+
+
+/* === DEVICE === */
+
+.device-container {
+  position: relative;
+  width: var(--device-width);
+  /* height auto-derives from the base image aspect ratio (2534:2757) */
+}
+
+.device-base {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--device-radius);
+  /* Prevent long-press save on mobile */
+  pointer-events: none;
+}
+
+
+/* === BUTTONS === */
+
+/* Transparent hit-zone div absolutely positioned over each recess */
+.btn-zone {
+  position: absolute;
+  width:  var(--btn-size);
+  height: var(--btn-size);
+  border-radius: 50%;
+  cursor: pointer;
+  /* Centre the orange button image within the hit zone */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* No visible default styling — purely functional */
+  outline: none;
+  -webkit-touch-callout: none;
+}
+
+/* --- Individual button positions (calibrated to base@300x.png recesses) --- */
+.btn-zone[data-btn="color"]   { top: var(--btn-color-top);   left: var(--btn-color-left);   }
+.btn-zone[data-btn="print"]   { top: var(--btn-print-top);   left: var(--btn-print-left);   }
+.btn-zone[data-btn="effects"] { top: var(--btn-effects-top); left: var(--btn-effects-left); }
+.btn-zone[data-btn="size"]    { top: var(--btn-size-top);    left: var(--btn-size-left);    }
+.btn-zone[data-btn="add"]     { top: var(--btn-add-top);     left: var(--btn-add-left);     }
+
+/* Orange button image inside the hit zone */
+.btn-icon {
+  display: block;
+  width:  70px;
+  height: 70px;
+  border-radius: 50%;
+  pointer-events: none;
+  transition:
+    transform var(--t-fast) ease-in-out,
+    filter    var(--t-fast) ease-in-out;
+  /* Subtle idle drop-shadow to lift buttons off the surface */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+}
+
+/* Active (pressed) state: scale down + darken button image */
+.btn-zone.is-pressed .btn-icon {
+  transform: scale(0.88);
+  filter: brightness(0.72) drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+}
+
+/* Selected / active button stays slightly highlighted */
+.btn-zone.is-active .btn-icon {
+  filter: brightness(1.1) drop-shadow(0 0 6px var(--clr-orange-glow));
+}
+
+/* Keyboard focus ring */
+.btn-zone:focus-visible .btn-icon {
+  outline: 2px solid var(--clr-orange);
+  outline-offset: 3px;
+  border-radius: 50%;
+}
+
+
+/* === SCREEN === */
+
+/* Transparent overlay — no background, no border.
+   The black screen and orange glow are already in base@300x.png.
+   This div only positions the text content above the image. */
+.screen-overlay {
+  position: absolute;
+  left:     var(--screen-left);
+  top:      var(--screen-top);
+  width:    var(--screen-width);
+  height:   var(--screen-height);
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Hide the grain SVG — it only defines filter IDs */
+.grain-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Inner content region — fills the screen */
+.screen-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 8px 7px;
+  color: var(--clr-screen-text);
+  font-family: var(--font-screen);
+  font-size: 10px;
+  line-height: 1.4;
+  overflow: hidden;
+  /* Fade content transitions */
+  transition: opacity var(--t-normal) ease;
+}
+
+.screen-content.is-fading {
+  opacity: 0;
+}
+
+
+/* === MENUS === */
+
+/* Screen title bar */
+.screen-title {
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #EDE0C4;
+  border-bottom: 1px solid rgba(237, 224, 196, 0.25);
+  padding-bottom: 3px;
+  margin-bottom: 4px;
+}
+
+/* List of menu options */
+.menu-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.menu-item {
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  padding: 2px 3px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hover / focus state for menu items */
+.menu-item:hover,
+.menu-item.is-highlighted {
+  background: var(--clr-selected-bg);
+  color: var(--clr-white);
+}
+
+/* Currently selected option — marked with ▶ */
+.menu-item.is-selected {
+  color: var(--clr-orange);
+}
+
+.menu-item.is-selected::before {
+  content: '▶ ';
+  font-size: 13px;
+}
+
+
+/* === IDLE — PIXEL ART TEXT DISPLAY === */
+
+/* Hidden file input — triggered programmatically by the add button */
+.hidden-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Idle screen text layout */
+.screen-idle {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Orange header line */
+.px-header {
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: var(--clr-orange);
+  line-height: 1.2;
+}
+
+/* Dim divider rule — uses box-drawing dashes */
+.px-divider {
+  font-size: 8px;
+  letter-spacing: -0.12em;
+  color: var(--clr-screen-dim);
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Primary status text */
+.px-status {
+  font-size: 15px;
+  color: var(--clr-orange);
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+}
+
+/* Info lines (photo count, chain info) */
+.px-info {
+  font-size: 15px;
+  color: var(--clr-screen-text);
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+/* Dim hint lines at the bottom */
+.px-hint {
+  font-size: 15px;
+  color: var(--clr-screen-dim);
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+/* Flexible vertical spacer */
+.px-spacer {
+  flex: 1;
+}
+
+
+/* === PRINT ANIMATION === */
+
+/* Outer wrapper shown during print sequence */
+.screen-print {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Rolling paper-feed stripes */
+.paper-feed {
+  width: 100%;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.paper-line {
+  height: 3px;
+  width: 100%;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    #e8e8e8 0px,
+    #e8e8e8 2px,
+    #fff 2px,
+    #fff 6px
+  );
+  animation: feed-scroll 0.18s linear infinite;
+  transform-origin: top;
+}
+
+/* Print result — text-only confirmation panel */
+.print-result {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 5px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.print-result.is-visible {
+  opacity: 1;
+}
+
+/* Progress bar drawn with block chars */
+.print-progress {
+  font-size: 9px;
+  color: var(--clr-orange);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.print-status {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--clr-screen-dim);
+  line-height: 1.4;
+}
+
+/* Blinking cursor dot */
+.blink {
+  animation: blink-cursor 0.9s step-end infinite;
+}
+
+
+/* === ANIMATIONS === */
+
+/* Paper-feed scroll: moves lines upward */
+@keyframes feed-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-3px); }
+}
+
+/* Blinking cursor */
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Screen fade in for content transitions */
+@keyframes screen-fadein {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.screen-content > * {
+  animation: screen-fadein var(--t-normal) ease both;
+}
+
+/* Button press "ripple" highlight */
+@keyframes btn-flash {
+  0%   { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+.btn-zone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn-zone.is-pressed::after {
+  animation: btn-flash var(--t-normal) ease-out forwards;
+}
+
+
+/* === THERMAL EFFECTS === */
+
+/* Applied to preview images to simulate thermal output:
+   desaturated, high-contrast, slightly warm-paper tone */
+.thermal {
+  filter:
+    grayscale(70%)
+    contrast(130%)
+    brightness(0.95)
+    sepia(15%);
+}
+
+/* Colour preset modifiers — toggled by STATE.color selection */
+.thermal-warm {
+  filter:
+    grayscale(30%)
+    contrast(120%)
+    brightness(0.92)
+    sepia(40%);
+}
+
+.thermal-cold {
+  filter:
+    grayscale(55%)
+    contrast(125%)
+    brightness(1.0)
+    hue-rotate(200deg)
+    saturate(60%);
+}
+
+.thermal-faded {
+  filter:
+    grayscale(50%)
+    contrast(80%)
+    brightness(1.1)
+    sepia(25%);
+}
+
+.thermal-sepia {
+  filter:
+    grayscale(100%)
+    contrast(110%)
+    brightness(0.9)
+    sepia(80%);
+}
+
+.thermal-bw {
+  filter:
+    grayscale(100%)
+    contrast(140%)
+    brightness(0.88);
+}
+
+/* Effect modifiers — stacked additively via JS class list */
+.effect-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* SVG noise via filter URL defined in index.html */
+  filter: url(#grain-filter);
+  opacity: 0.25;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.effect-vignette::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+  pointer-events: none;
+}
+
+.effect-blur .preview-photo,
+.effect-blur .print-result-photo {
+  filter: blur(0.8px);
+}
+
+.effect-overexposed .preview-photo,
+.effect-overexposed .print-result-photo {
+  filter: brightness(1.45) contrast(115%);
+}
+
+/* Scratches: CSS-only diagonal lines overlay */
+.effect-scratches::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    -55deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 255, 255, 0.04) 8px,
+    rgba(255, 255, 255, 0.04) 9px
+  );
+  pointer-events: none;
+}
