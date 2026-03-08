@@ -32,7 +32,7 @@ body {
 
 :root {
   /* Brand colours */
-  --clr-bg:          #EDE0C4; /* warm cream / parchment */
+  --clr-bg:          #ffcefb; /* warm cream / parchment */
   --clr-orange:      #F07020;
   --clr-orange-dim:  #A04A10;
   --clr-orange-glow: rgba(240, 112, 32, 0.55);
@@ -60,36 +60,8 @@ body {
   --screen-height:  41%;
   --screen-radius:  10px;
 
-  /* Button hit-zone size (same for all five) */
-  --btn-size:       80px;
-
-  /* Button positions — center of each recess as % of device-container.
-     CALIBRATION NOTE: measured from base@300x.png (2534 × 2757).
-     If buttons appear offset, tweak these values. The % for `top`
-     is of the container HEIGHT, `left` is of WIDTH.
-
-     color   → top-center  recess  (~32.5% w, ~20% h)
-     print   → top-right   recess  (~81%   w, ~20% h)
-     effects → middle-left recess  (~13%   w, ~39% h)
-     size    → middle-ctr  recess  (~32.5% w, ~50% h)
-     add     → bottom-left recess  (~13%   w, ~66% h)
-  */
-  --btn-half:       40px; /* half of --btn-size for calc() offsets */
-
-  --btn-color-top:  calc(20% - var(--btn-half));
-  --btn-color-left: calc(32.5% - var(--btn-half));
-
-  --btn-print-top:  calc(20% - var(--btn-half));
-  --btn-print-left: calc(81% - var(--btn-half));
-
-  --btn-effects-top:  calc(39% - var(--btn-half));
-  --btn-effects-left: calc(13% - var(--btn-half));
-
-  --btn-size-top:  calc(50% - var(--btn-half));
-  --btn-size-left: calc(32.5% - var(--btn-half));
-
-  --btn-add-top:  calc(66% - var(--btn-half));
-  --btn-add-left: calc(13% - var(--btn-half));
+  /* Tamaño botón = 151.2px / 608.16px (base) = 24.9% del ancho del device-container */
+  --btn-size: 24.9%;
 
   /* Transition timings */
   --t-fast:   80ms;
@@ -135,34 +107,57 @@ body {
 
 /* === BUTTONS === */
 
-/* Transparent hit-zone div absolutely positioned over each recess */
+/* Transparent hit-zone div — tamaño y posición derivados del artboard de Illustrator.
+   top/left apuntan al CENTRO del botón; translate(-50%,-50%) lo centra exactamente. */
 .btn-zone {
   position: absolute;
-  width:  var(--btn-size);
-  height: var(--btn-size);
+  width:        var(--btn-size);
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   cursor: pointer;
-  /* Centre the orange button image within the hit zone */
   display: flex;
   align-items: center;
   justify-content: center;
-  /* No visible default styling — purely functional */
+  transform: translate(-50%, -50%);
   outline: none;
   -webkit-touch-callout: none;
 }
 
-/* --- Individual button positions (calibrated to base@300x.png recesses) --- */
-.btn-zone[data-btn="color"]   { top: var(--btn-color-top);   left: var(--btn-color-left);   }
-.btn-zone[data-btn="print"]   { top: var(--btn-print-top);   left: var(--btn-print-left);   }
-.btn-zone[data-btn="effects"] { top: var(--btn-effects-top); left: var(--btn-effects-left); }
-.btn-zone[data-btn="size"]    { top: var(--btn-size-top);    left: var(--btn-size-left);    }
-.btn-zone[data-btn="add"]     { top: var(--btn-add-top);     left: var(--btn-add-left);     }
+/* --- Posición de cada botón — coordenadas del CENTRO en % del base image.
+   Calculado desde artboard Illustrator 1920×1080, base centrado en (960, 540).
+   top/left = posición del centro del botón relativa al base (device-container).
+   Para mover: ↑ reduce top · ↓ aumenta top · ← reduce left · → aumenta left   */
 
-/* Orange button image inside the hit zone */
+.btn-zone[data-btn="color"] {
+  top:  19.0%;   /* Y centro: (334.81 − 209.16) / 661.68 */
+  left: 38.1%;   /* X centro: (887.4  − 655.92) / 608.16 */
+}
+
+.btn-zone[data-btn="print"] {
+  top:  19.0%;   /* Y centro: misma fila que color */
+  left: 84.2%;   /* X centro: (1168.29 − 655.92) / 608.16 */
+}
+
+.btn-zone[data-btn="effects"] {
+  top:  33.1%;   /* Y centro: (428.15 − 209.16) / 661.68 */
+  left: 15.5%;   /* X centro: (750.06 − 655.92) / 608.16 */
+}
+
+.btn-zone[data-btn="size"] {
+  top:  47.2%;   /* Y centro: (521.47 − 209.16) / 661.68 */
+  left: 38.1%;   /* X centro: misma columna que color */
+}
+
+.btn-zone[data-btn="add"] {
+  top:  61.3%;   /* Y centro: (614.81 − 209.16) / 661.68 */
+  left: 15.5%;   /* X centro: misma columna que effects */
+}
+
+/* Orange button image — llena el hit-zone completo (que ya escala con el device) */
 .btn-icon {
   display: block;
-  width:  70px;
-  height: 70px;
+  width:  100%;
+  height: 100%;
   border-radius: 50%;
   pointer-events: none;
   transition:
