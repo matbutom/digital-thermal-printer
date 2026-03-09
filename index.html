@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#EDE0C4" />
+  <title>DTP · Digital Thermal Printer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- =============================================
+       LEFT — Printer device
+       ============================================= -->
+  <section class="printer-section">
+
+    <div class="device-container" id="device-container">
+
+      <!-- Device body -->
+      <img
+        class="device-base"
+        src="assets/300ppi/base@300x.png"
+        alt="DTP Digital Thermal Printer"
+        draggable="false"
+      />
+
+      <!-- Paper strip that slides out of the top slot during print -->
+      <div class="print-strip" id="print-strip" aria-hidden="true">
+        <canvas id="strip-canvas"></canvas>
+      </div>
+
+      <!-- ── Button zones ── -->
+      <div class="btn-zone" id="btn-color"   data-btn="color"   role="button" aria-label="Color"   tabindex="0">
+        <img class="btn-icon" src="assets/300ppi/boton@300x.png" alt="" draggable="false" />
+      </div>
+      <div class="btn-zone" id="btn-print"   data-btn="print"   role="button" aria-label="Print"   tabindex="0">
+        <img class="btn-icon" src="assets/300ppi/boton@300x.png" alt="" draggable="false" />
+      </div>
+      <div class="btn-zone" id="btn-effects" data-btn="effects" role="button" aria-label="Effects" tabindex="0">
+        <img class="btn-icon" src="assets/300ppi/boton@300x.png" alt="" draggable="false" />
+      </div>
+      <div class="btn-zone" id="btn-size"    data-btn="size"    role="button" aria-label="Size"    tabindex="0">
+        <img class="btn-icon" src="assets/300ppi/boton@300x.png" alt="" draggable="false" />
+      </div>
+      <div class="btn-zone" id="btn-add"     data-btn="add"     role="button" aria-label="Add"     tabindex="0">
+        <img class="btn-icon" src="assets/300ppi/boton@300x.png" alt="" draggable="false" />
+      </div>
+
+      <!-- Hidden file input -->
+      <input
+        type="file"
+        id="photo-input"
+        accept="image/*"
+        multiple
+        class="hidden-input"
+        aria-hidden="true"
+        tabindex="-1"
+      />
+
+      <!-- Screen overlay -->
+      <div class="screen-overlay" id="screen-overlay" aria-live="polite">
+        <svg class="grain-svg" aria-hidden="true">
+          <defs>
+            <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+              <feColorMatrix type="saturate" values="0" />
+              <feBlend in="SourceGraphic" mode="multiply" />
+            </filter>
+          </defs>
+        </svg>
+        <div class="screen-content" id="screen-content"></div>
+      </div>
+
+    </div>
+    <!-- /device-container -->
+
+  </section>
+  <!-- /printer-section -->
+
+
+  <!-- =============================================
+       RIGHT — Desk / output gallery
+       ============================================= -->
+  <section class="desk-section" id="desk-section">
+
+    <div class="desk" id="desk"></div>
+
+    <p class="desk-empty" id="desk-empty">── no prints yet ──</p>
+
+  </section>
+  <!-- /desk-section -->
+
+</div>
+<!-- /page-wrapper -->
+
+<!-- =============================================
+     PRINT OVERLAY — mobile post-print result
+     ============================================= -->
+<div class="print-overlay" id="print-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+  <img class="overlay-image" id="overlay-image" alt="thermal print" />
+  <button class="overlay-download" id="overlay-download">SAVE IMAGE</button>
+  <button class="overlay-close"    id="overlay-close">CLOSE ✕</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
