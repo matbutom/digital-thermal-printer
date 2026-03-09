@@ -821,11 +821,32 @@ function createPrintCard(ditheredCanvas, dateStr) {
   }, { once: true });
 }
 
-/** Trigger browser file download of the card image */
-function downloadCard(dataUrl, dateStr) {
+/** Save / download the card image.
+ *  On mobile: uses Web Share API (opens native share sheet →
+ *  "Save Image" saves directly to the camera roll on iOS/Android).
+ *  On desktop or if share is unavailable: regular browser download.
+ */
+async function downloadCard(dataUrl, dateStr) {
+  const filename = `DTP_${dateStr.replace(/\s/g, '_')}.png`;
+
+  if (isMobile() && navigator.share) {
+    try {
+      const res  = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'DTP Print' });
+        return;
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return; /* user dismissed sheet */
+      /* fall through to <a> download */
+    }
+  }
+
   const a = document.createElement('a');
   a.href     = dataUrl;
-  a.download = `DTP_${dateStr.replace(/\s/g, '_')}.png`;
+  a.download = filename;
   a.click();
 }
 
