@@ -85,6 +85,7 @@ const DOM = {
   printOverlay:    null,
   overlayImage:    null,
   overlayDownload: null,
+  overlayHint:     null,
   overlayClose:    null,
 };
 
@@ -670,6 +671,10 @@ function effectScratches(ctx, w, h) {
 
 const isMobile = () => window.matchMedia('(max-width: 700px)').matches;
 
+const isIOS = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 /**
  * Shows the full-screen result overlay on mobile.
  * If the overlay is already visible (chain print), just swaps the image.
@@ -680,10 +685,20 @@ function showPrintOverlay(imgSrc, dateStr) {
   const overlay = DOM.printOverlay;
   const img     = DOM.overlayImage;
   const dlBtn   = DOM.overlayDownload;
+  const hint    = DOM.overlayHint;
 
   img.src = imgSrc;
   overlay.classList.add('is-visible');
   overlay.setAttribute('aria-hidden', 'false');
+
+  /* iOS: open image in new tab — user long-presses → "Save to Photos" */
+  if (isIOS()) {
+    dlBtn.textContent = 'OPEN IMAGE';
+    if (hint) hint.textContent = 'then hold image → save to photos';
+  } else {
+    dlBtn.textContent = 'SAVE IMAGE';
+    if (hint) hint.textContent = '';
+  }
 
   /* Re-bind download each time (different image per print in a chain) */
   dlBtn.onclick = () => downloadCard(imgSrc, dateStr);
@@ -822,13 +837,20 @@ function createPrintCard(ditheredCanvas, dateStr) {
 }
 
 /** Save / download the card image.
- *  On mobile: uses Web Share API (opens native share sheet →
- *  "Save Image" saves directly to the camera roll on iOS/Android).
- *  On desktop or if share is unavailable: regular browser download.
+ *  iOS:     opens image in a new Safari tab — user long-presses → "Save to Photos"
+ *  Android: Web Share API → native share sheet → "Save Image" to gallery
+ *  Desktop: standard <a download> browser download
  */
 async function downloadCard(dataUrl, dateStr) {
   const filename = `DTP_${dateStr.replace(/\s/g, '_')}.png`;
 
+  /* iOS — window.open must be called synchronously to avoid popup blockers */
+  if (isIOS()) {
+    window.open(dataUrl, '_blank');
+    return;
+  }
+
+  /* Android / other mobile — Web Share API */
   if (isMobile() && navigator.share) {
     try {
       const res  = await fetch(dataUrl);
@@ -844,6 +866,7 @@ async function downloadCard(dataUrl, dateStr) {
     }
   }
 
+  /* Desktop fallback */
   const a = document.createElement('a');
   a.href     = dataUrl;
   a.download = filename;
@@ -1035,6 +1058,7 @@ function init() {
   DOM.printOverlay    = document.getElementById('print-overlay');
   DOM.overlayImage    = document.getElementById('overlay-image');
   DOM.overlayDownload = document.getElementById('overlay-download');
+  DOM.overlayHint     = document.getElementById('overlay-hint');
   DOM.overlayClose    = document.getElementById('overlay-close');
 
   if (!DOM.deviceContainer || !DOM.screenContent) {
